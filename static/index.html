@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Ascii's Toybox</title>
+    <link rel="stylesheet" href="/common.css">
+</head>
+
+<body>
+    <h2>Ascii's Toybox</h2>
+    <p>
+        Welcome to the toybox! This is my dumping ground for random interactive toys and APIs. Make yourself at home and
+        feel free to play around with the stuff here.
+    </p>
+    <p>
+        This page also acts as a manual for the programming interfaces hosted on this domain. Methods are assumed to be
+        GET unless mentioned otherwise.
+    </p>
+    <h2>One Word Story</h2>
+    <p>
+        Text written by strangers on the internet, one word at a time.
+    </p>
+    <b><a href="/story">Click here to try it out</a></b>
+    <h2>Circles of Trust</h2>
+    <p>
+        Each circle acts as a guestbook of people who've stopped by to grow its size. However, at any point, someone can
+        choose to Betray the circle, dooming it and rendering it destroyed.
+    </p>
+    <b><a href="/trust">Click here to try it out</a></b>
+    <h2>Color generator</h2>
+    <section>
+        <h3>/color/:pattern</h3>
+        <p>
+            Get a PNG image representing a given color. <code>pattern</code> follows the <a href="#color-format">color
+                format</a>.
+        </p>
+    </section>
+    <section>
+        <h3>/palette/:pattern</h3>
+        <p>
+            Get a PNG image representing a swatch of colors. Maximum number of items is 20. <code>pattern</code> follows
+            the <a href="#color-format">color format</a>.
+        </p>
+        <div class="push">
+            <h4>Query parameters</h4>
+            <ul>
+                <li>
+                    <code>width</code> - Width of individual stripes, in pixels (max 2000)
+                </li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <h3>/gradient/:pattern</h3>
+        <p>
+            Get a PNG image representing a gradient of colors. Maximum number of items is 20. <code>pattern</code>
+            follows the <a href="#color-format">color format</a> with gradient stops.
+        </p>
+        <div class="push">
+            <h4>Query parameters</h4>
+            <ul>
+                <li>
+                    <code>width</code> - Width of the generated image, in pixels (max 2000)
+                </li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <h3 id="color-format">Color format</h3>
+        <p>
+            The color parser supports both hexadecimal codes (without the leading hash symbol) and RGB expressions in
+            <code>rgb(0-255,0-255,0-255)</code> format. <a
+                href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/named-color">Web named
+                colors</a>
+            are also supported.
+        </p>
+        <p>
+            For endpoints that support multiple colors, each color is to be separated by a <code>+</code> character. Add
+            <code>{n}</code> to the end of the expression to repeat it that many times. For example:
+            <code>blue{4}</code>.
+        </p>
+        <p>
+            Use an asterisk symbol to request a random color. In parentheses after the asterisk, you can specify how to
+            generate each color channel: <code>min-max</code> constrains the generator to a range. <code>num</code>
+            locks that channel to a particular value. <code>*</code> is equivalent to <code>0-255</code>. For example:
+            <code>*(128-192,222,*)</code>.
+        </p>
+        <p>
+            For endpoints that support gradient stops, prefix the color expression with <code>n:</code> to define a
+            stop, where <code>n</code> is a value between 0 and 100 (percent). For example:
+            <code>0:red+30:green+100:blue</code>.
+        </p>
+        <p>
+            All operators can be chained together. For example, to generate a palette of several greens followed by one
+            red:<br>
+            <code>*(64-198,255,0-128){5}+red</code>.
+        </p>
+    </section>
+</body>

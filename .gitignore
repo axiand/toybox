@@ -1,0 +1,4 @@
+.env
+static/profanity_en.csv
+data
+node_modules

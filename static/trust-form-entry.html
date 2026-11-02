@@ -1,0 +1,13 @@
+<form method="post" action="/trust/makeentry">
+    <b>Your name:</b>
+    <input type="hidden" name="cid" value="%cid%">
+    <input type="text" name="userName"><br>
+    <label for="comment"><b>Comment</b></label>
+    <textarea id="comment" name="comment" rows="5" cols="30" placeholder="Optional comment (max 300 chars)"></textarea>
+    <br>
+    <input type="radio" id="act-keep" name="action" value="keep" checked>
+    <label for="act-keep">Join</label>
+    <input type="radio" id="act-destroy" name="action" value="destroy">
+    <label for="act-destroy">Betray</label>
+    <button><b>Submit</b></button>
+</form>
