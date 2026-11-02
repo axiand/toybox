@@ -12,7 +12,7 @@ const indexCss = readFileSync(pathify('/static/common.css'))
 
 if (!existsSync(pathify('/data'))) {
     mkdirSync(pathify('/data/ows'), { recursive: true })
-    mkdirSync(pathify('/data/trust'), { recursive: true })
+    mkdirSync(pathify('/data/trust/morgue'), { recursive: true })
 }
 
 process.loadEnvFile(pathify('.env'))
