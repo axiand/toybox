@@ -2,7 +2,7 @@ const { readdirSync, readFileSync, existsSync, writeFileSync, appendFileSync } =
 const { join } = require('path')
 
 const { ipToHash } = require('../common/hash')
-const { checkBannedWord } = require('../common/badWords')
+const { checkBannedWord, checkBannedSentence } = require('../common/badWords')
 const { kvlSerialize, kvlReadFile } = require('../common/kvline')
 
 const CHAPTER_MARKER_PATH = join(__dirname, '../data/ows/_latestId')
@@ -72,7 +72,7 @@ function getChapters() {
 
 function getStory(chapter) {
     let where = chapter != null ? join(__dirname, `../data/ows/${chapter}.txt`) : getLatestChapterPath()
-    if (!where.startsWith(CHAPTER_PATH)) return "path traversal"
+    if (!where.startsWith(CHAPTER_PATH) || where.includes('..')) return "path traversal"
     if (!existsSync(where)) return null
 
     let storyData = readFileSync(where, { encoding: 'utf-8' })
@@ -156,6 +156,7 @@ function rView(req, res) {
     }
 
     ui = ui.replace('%chapters%', renderChapters(chapter ?? latestChapter))
+    ui = ui.replace('%wordsLeft%', MAX_CHAPTER_LENGTH - story.length)
 
     res.header('Content-Type', 'text/html')
     res.send(ui)
@@ -168,7 +169,9 @@ function rSubmitWord(req, res) {
 
     let pass = true
     if (!word.match(/^[a-z]{1,18}[.!?]?$/)) pass = false
-    if (checkBannedWord(word)) pass = false
+
+    let storyWords = getStory().map(w => w.value).join(' ')
+    if (checkBannedSentence(storyWords + ` ${word}`)) pass = false
 
     if (wordSpecial != null && (wordSpecial == "(new line)")) {
         word = wordSpecial

@@ -29,6 +29,8 @@ function checkBannedWord(word) {
 function checkBannedSentence(str) {
     let hit = false
 
+    if (checkBannedWord(str.replaceAll(/\s/g, ''))) return true
+
     for (let word of str.split(/\s/)) {
         hit = checkBannedWord(word)
         if (hit) break

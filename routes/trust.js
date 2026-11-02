@@ -15,7 +15,7 @@ const ENTRY_FORM_TEMPLATE = readFileSync(join(__dirname, '../static/trust-form-e
 const CIRCLES_LIMIT = 20
 
 function getCircle(where) {
-    if (!resolve(where).startsWith(CIRCLES_PATH)) return "path traversal"
+    if (!resolve(where).startsWith(CIRCLES_PATH) || where.includes('..')) return "path traversal"
     if (!existsSync(where)) return null
 
     let circleData = readFileSync(where, { encoding: 'utf-8' })
