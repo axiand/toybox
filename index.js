@@ -67,6 +67,8 @@ app.get('/headers', (req, res) => {
     res.send(final)
 })
 
+app.set('trust proxy', 'loopback')
+
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`)
 })
