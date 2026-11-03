@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<head>
+    <title>Asciiboard</title>
+    <link rel="stylesheet" href="/common.css">
+</head>
+
+<body class="bbs">
+    <h2 class="bbs-title">Asciiboard</h2>
+    <p class="bbs-centered" %homeLinkStyle%><a href="/bbs">Go back home</a></p>
+    <details class="bbs-flex">
+        <summary class="bbs-centered">Create a Thread</summary>
+        <form method="post" action="/bbs/submit" class="bbs-post-form">
+            <div>
+                <b>Subject</b>
+                <input type="text" name="subject"><br>
+            </div>
+            <div>
+                <b>Name</b>
+                <input type="text" name="name" placeholder="Anonymous"><br>
+                %postAsAdmin%
+            </div>
+            <label for="comment"><b>Comment</b></label>
+            <textarea id="comment" name="comment" rows="5" cols="30" placeholder="Comment (max 1500 chars)"
+                style="resize:vertical;"></textarea>
+            <br>
+            <button><b>Submit</b></button>
+        </form>
+    </details>
+    <div class="bbs-articles">
+        %articles%
+    </div>
+    <p class="bbs-centered">%threadCount%</p>
+    <div id="about">%bbsInfo%</div>
+    <hr>
+    <p class="bbs-centered smalltext">
+        Proudly served by the <a href="/">Toybox</a>! - <a href="/bbs/admin">Admin login</a>
+    </p>
+</body>

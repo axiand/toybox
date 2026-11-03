@@ -1,6 +1,7 @@
 const { readFileSync, mkdirSync, existsSync } = require('fs')
 const { join } = require('path')
 const express = require('express')
+const cookieparser = require('cookie-parser')
 const PORT = 5110
 
 function pathify(path) {
@@ -13,6 +14,7 @@ const indexCss = readFileSync(pathify('/static/common.css'))
 if (!existsSync(pathify('/data'))) {
     mkdirSync(pathify('/data/ows'), { recursive: true })
     mkdirSync(pathify('/data/trust/morgue'), { recursive: true })
+    mkdirSync(pathify('/data/bbs'), { recursive: true })
 }
 
 process.loadEnvFile(pathify('.env'))
@@ -20,8 +22,15 @@ process.loadEnvFile(pathify('.env'))
 const { getColor, getPalette, getGradient } = require('./routes/color')
 const { viewOneWordStory, submitOneWordStory } = require('./routes/oneWordStory')
 const { indexCirclesOfTrust, createCircleOfTrust, showCircleOfTrust, createCircleOfTrustEntry } = require('./routes/trust')
+const { readBbs, submitBbs, adminBbs, adminBbsLogin, adminBbsBan, adminBbsDeleteThreads } = require('./routes/bbs')
 
 const app = express()
+
+app.use(cookieparser())
+app.use((req, res, next) => {
+    res.header('Content-Type', 'text/html')
+    next()
+})
 
 app.get('/', (req, res) => {
     res.header('Content-Type', 'text/html')
@@ -44,6 +53,17 @@ if (process.env['TOYBOX_DISABLE_SOCIAL'] != '1') {
     app.post('/trust/newcircle', express.urlencoded(), createCircleOfTrust)
     app.post('/trust/makeentry', express.urlencoded(), createCircleOfTrustEntry)
 }
+
+if (process.env['TOYBOX_DISABLE_BBS'] != '1') {
+    // Textboard
+    app.get('/bbs', readBbs)
+    app.post('/bbs/submit', express.urlencoded(), submitBbs)
+    app.get('/bbs/admin', adminBbs)
+    app.post('/bbs/admin/login', express.urlencoded(), adminBbsLogin)
+    app.post('/bbs/admin/deletethreads', express.urlencoded(), adminBbsDeleteThreads)
+}
+
+app.post('/bbs/admin/banip', express.urlencoded(), adminBbsBan)
 
 // Color generators
 app.get('/color/:pattern', getColor)

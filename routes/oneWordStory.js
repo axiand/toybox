@@ -2,7 +2,7 @@ const { readdirSync, readFileSync, existsSync, writeFileSync, appendFileSync } =
 const { join } = require('path')
 
 const { ipToHash } = require('../common/hash')
-const { checkBannedWord, checkBannedSentence } = require('../common/badWords')
+const { checkBannedSentence } = require('../common/badWords')
 const { kvlSerialize, kvlReadFile } = require('../common/kvline')
 
 const CHAPTER_MARKER_PATH = join(__dirname, '../data/ows/_latestId')

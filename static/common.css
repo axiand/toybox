@@ -13,7 +13,8 @@ code {
     color: var(--text-accent);
 }
 
-ul {
+ul,
+ol {
     margin: 0em;
     padding-left: 2em;
 }
@@ -67,8 +68,23 @@ form {
     margin: 4px 0px;
 }
 
+.smallform {
+    border: none;
+    padding: 0;
+
+    button {
+        padding: 1px;
+        font-size: 85%;
+    }
+}
+
 .author {
     color: var(--text-accent);
+    font-weight: bold;
+    margin: 0;
+}
+
+.author-id {
     font-weight: bold;
     margin: 0;
 }
@@ -85,4 +101,89 @@ th {
 
 tr:nth-child(odd) {
     background-color: #f6f6f6;
+}
+
+html:has(.bbs) {
+    background-color: lavender;
+}
+
+body.bbs {
+    margin: auto;
+    max-width: 70em;
+    background-color: white;
+    padding: 1.5em;
+    border: 1px solid black;
+    margin-top: 1.5em;
+    margin-bottom: 3em;
+}
+
+.bbs-title {
+    text-align: center;
+}
+
+.bbs-thread-title {
+    color: black;
+    font-size: 130%;
+    font-weight: bold;
+    margin: 0.75em 0em;
+
+    a {
+        color: var(--text-accent) !important;
+    }
+}
+
+.bbs-poster {
+    display: ruby;
+}
+
+.bbs-banned {
+    color: gray;
+    font-style: italic;
+    font-size: 90%;
+}
+
+.bbs-post:has(.bbs-admin-banned) {
+    opacity: 0.65;
+    font-size: 90%;
+}
+
+.bbs-centered {
+    color: var(--text-accent);
+    font-size: 110%;
+    text-align: center;
+    margin-bottom: 0.3em;
+    font-weight: bold;
+
+    a {
+        color: var(--text-accent) !important;
+    }
+}
+
+.bbs-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bbs-replies {
+    margin: 1em 0em;
+}
+
+.bbs-post-form {
+    display: inline-grid;
+    grid-row-gap: 0.3em;
+    width: 26em;
+}
+
+.bbs-ts {
+    color: black;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: dotted underline;
+    }
+}
+
+*:target {
+    background-color: #f02c9a12;
 }
