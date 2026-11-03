@@ -243,6 +243,7 @@ function rRead(req, res) {
         ui = ui.replace('%homeLinkStyle%', `style="display: none;"`)
         ui = ui.replace('%bbsInfo%', INFO_TEMPLATE)
         ui = ui.replace('%threadCount%', `${threads.length} thread(s) - Your ID: ${ipToHash(req.ip).slice(0, 6)}`)
+        ui = ui.replace('%title%', 'Asciiboard')
     } else {
         let thread = getThread(join(BBS_PATH, `${threadId}.txt`), isAdmin(req))
         if (thread == 'path traversal') return rejectRequest(res, 'no')
@@ -251,6 +252,7 @@ function rRead(req, res) {
         ui = ui.replace('%articles%', renderThread(thread, false))
         ui = ui.replace('%bbsInfo%', '')
         ui = ui.replace('%threadCount%', `${thread.len - 1} replies - Your ID: ${ipToHash(req.ip).slice(0, 6)}`)
+        ui = ui.replace('%title%', `${thread.subject} :: Asciiboard`)
     }
 
     ui = ui.replace('%postAsAdmin%', !isAdmin(req) ? '' : `
