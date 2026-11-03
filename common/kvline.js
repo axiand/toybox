@@ -7,8 +7,8 @@ function deserialize(line) {
         if (prop.trim().length == 0) continue
         let [key, value] = prop.split('=')
 
-        if (value == null) { data.value = key.replaceAll('\\n', '\n') }
-        else { data[key] = value.replaceAll('\\n', '\n') }
+        if (value == null) { data.value = decodeURIComponent(key).replaceAll('\\n', '\n') }
+        else { data[key] = decodeURIComponent(value).replaceAll('\\n', '\n') }
     }
 
     return data
@@ -22,9 +22,9 @@ function serialize(thing) {
         srcVal = srcVal.replaceAll(/\r?\n/g, '\\n')
 
         if (prop == "value") {
-            out += `${srcVal};`
+            out += `${encodeURIComponent(srcVal)};`
         } else if (srcVal != null) {
-            out += `${prop}=${srcVal};`
+            out += `${prop}=${encodeURIComponent(srcVal)};`
         }
     }
     out += "\n"

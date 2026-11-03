@@ -22,7 +22,7 @@ process.loadEnvFile(pathify('.env'))
 const { getColor, getPalette, getGradient } = require('./routes/color')
 const { viewOneWordStory, submitOneWordStory } = require('./routes/oneWordStory')
 const { indexCirclesOfTrust, createCircleOfTrust, showCircleOfTrust, createCircleOfTrustEntry } = require('./routes/trust')
-const { readBbs, submitBbs, adminBbs, adminBbsLogin, adminBbsBan, adminBbsDeleteThreads } = require('./routes/bbs')
+const { readBbs, submitBbs, adminBbs, adminBbsLogin, adminBbsBan, adminBbsDeleteThreads, bbsGetCaptcha, bbsGetCaptchaJs, bbsCheckCaptcha } = require('./routes/bbs')
 
 const app = express()
 
@@ -58,6 +58,11 @@ if (process.env['TOYBOX_DISABLE_BBS'] != '1') {
     // Textboard
     app.get('/bbs', readBbs)
     app.post('/bbs/submit', express.urlencoded(), submitBbs)
+
+    app.get('/bbs/captcha/get', bbsGetCaptcha)
+    app.post('/bbs/captcha/check', express.urlencoded(), bbsCheckCaptcha)
+    app.get('/bbs/captcha.js', bbsGetCaptchaJs)
+
     app.get('/bbs/admin', adminBbs)
     app.post('/bbs/admin/login', express.urlencoded(), adminBbsLogin)
     app.post('/bbs/admin/deletethreads', express.urlencoded(), adminBbsDeleteThreads)

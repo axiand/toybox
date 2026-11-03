@@ -1,5 +1,6 @@
 const { readdirSync, readFileSync, existsSync, writeFileSync, appendFileSync, rmSync, statSync } = require('fs')
 const { join, resolve } = require('path')
+const seedrandom = require('seedrandom')
 
 const { ipToHash } = require('../common/hash')
 const { checkBannedSentence } = require('../common/badWords')
@@ -15,19 +16,30 @@ const POST_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-post.html'))
 const REPLY_FORM_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-form.html'))
 const INFO_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-info.html'))
 const ADMIN_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-admin.html'))
+const CAPTCHA_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-captcha.js'))
 
-const SAFE_STRING_RGX = /^[a-zA-Z0-9!?.,\-_'"/()\s]+$/
+const SAFE_STRING_RGX = /^.+$/
 const MAX_SUBJECT_LENGTH = 120
 const MAX_NAME_LENGTH = 25
 const MAX_COMMENT_LENGTH = 1500
 const REPLY_TAIL_LENGTH = 5
 const POST_RATE_LIMIT = 30 * 1000
+const CAPTCHA_DIFFICULTY = 150
+const CAPTCHA_MAX_AGE = 30 * 60 * 1000
 
 const ADMIN_HASH = ipToHash(process.env['TOYBOX_ADMIN_PASS'])
 var RATE_LIMITS = new Map()
 
 function isSafeString(str, maxLength) {
     return str.match(SAFE_STRING_RGX) && str.length <= maxLength && str.trim().length > 0
+}
+
+function escape(str) {
+    if (str == null) return str
+    str = str.replaceAll('<', '&lt;')
+    str = str.replaceAll('>', '&gt;')
+
+    return str
 }
 
 function checkRateLimit(key, limit) {
@@ -176,8 +188,8 @@ function renderThread(thread, briefMode = true) {
     let uiReply = REPLY_FORM_TEMPLATE + ''
     uiReply = uiReply.replace('%tid%', thread.id)
     uiReply = uiReply.replace('%postAsAdmin%', !thread.admin ? '' : `
-            <input type="checkbox" name="postAsAdmin" id="postAsAdmin">
-            <label for="postAsAdmin">Admin Post</label>
+            <input type="checkbox" name="postAsAdmin" id="postAsAdmin.${thread.id}">
+            <label for="postAsAdmin.${thread.id}">Admin Post</label>
         `)
     ui = ui.replace('%replyForm%', uiReply)
 
@@ -257,6 +269,7 @@ function rSubmit(req, res) {
     if (bansCheckIpBan(req.ip)) return rejectRequest(res, 'You are currently banned from posting.')
     if (!checkRateLimit(req.ip, POST_RATE_LIMIT)) return rejectRequest(res, `You're posting too fast! Please wait 30 seconds.`)
     if (!isAdmin(req) && (postAsAdmin ?? 'off') == 'on') return rejectRequest(res, 'Cannot post as admin.')
+    if (!checkCaptcha(req.cookies.toybox_captcha ?? '')[0]) return rejectRequest(res, `Invalid captcha (if you're having trouble, try clearing cookies)`)
 
     let postData = {
         subject: subject,
@@ -266,6 +279,10 @@ function rSubmit(req, res) {
         admin: postAsAdmin ?? 'off'
     }
 
+    for (let k in postData) {
+        postData[k] = escape(postData[k])
+    }
+
     if (tid == null) {
         let threadRes = createThread(postData, res)
         if (threadRes) res.redirect(`/bbs/?read=${threadRes.id}`)
@@ -273,6 +290,57 @@ function rSubmit(req, res) {
         let postRes = createPost(tid, postData, res)
         if (postRes) res.redirect(`/bbs/?read=${tid}`)
     }
+}
+
+function rGetCaptchaJs(req, res) {
+    res.type('application/javascript')
+    res.send(CAPTCHA_TEMPLATE)
+}
+
+function rGetCaptcha(req, res) {
+    let ts = Date.now()
+    let hash = ipToHash(ts)
+
+    let numA = Math.round(seedrandom(ipToHash(ts)).double() * CAPTCHA_DIFFICULTY)
+    let numB = Math.round(seedrandom(ipToHash(ts + 255)).double() * CAPTCHA_DIFFICULTY)
+
+    res.type('application/json')
+    res.send(JSON.stringify({ ts: ts, h: hash, a: numA, b: numB }))
+}
+
+function rCheckCaptcha(req, res) {
+    let capStr = req.body?.capStr ?? req.cookies.toybox_captcha
+    if (!capStr) return res.sendStatus(400)
+
+    let [result, capTsInt] = checkCaptcha(capStr)
+    if (!result) return res.sendStatus(400)
+
+    res.type('application/json')
+    res.cookie('toybox_captcha', capStr, {
+        expires: new Date(capTsInt + CAPTCHA_MAX_AGE)
+    })
+    res.send(JSON.stringify({ success: true }))
+}
+
+function checkCaptcha(capStr) {
+    let [capHash, capTs, capSolution] = capStr.split(":")
+
+    /* Check for expiry */
+    let capTsInt = parseInt(capTs)
+    if (isNaN(capTsInt)) return [false]
+    if (Date.now() > (capTsInt + CAPTCHA_MAX_AGE)) return [false]
+
+    /* Check for hash forgery (hash is derived from ts) */
+    let checkHash = ipToHash(capTs)
+    if (capHash != checkHash) return [false]
+
+    /* Reconstruct the challenge and see if the solution matches */
+    let checkA = Math.round(seedrandom(ipToHash(capTsInt)).double() * CAPTCHA_DIFFICULTY)
+    let checkB = Math.round(seedrandom(ipToHash(capTsInt + 255)).double() * CAPTCHA_DIFFICULTY)
+    let checkSolution = (checkA + checkB)
+    if (capSolution != checkSolution) return [false]
+
+    return [true, capTsInt]
 }
 
 function checkAdminHash(str) {
@@ -291,22 +359,6 @@ function rAdmin(req, res) {
         ui = ui.replace('%loginForm%', '<p style="font-family: cursive;">Access Granted!!</p>')
 
         let toolsUi = ''
-
-        toolsUi += `
-            <h2>Banned IPs (${bansGetIpBanCount()})</h2>
-            <form action="/bbs/admin/banip" method="post">
-                <b>Make IP Ban</b>
-                <input type="text" name="ip" value="">
-                <input type="checkbox" name="unban" id="unban">
-                <label for="unban">Unban</label>
-                <button>Submit</button>
-            </form>
-            <ul>
-        `
-        for (let ban of bansGetIpBans()) {
-            toolsUi += `<li>${ban}</li>`
-        }
-        toolsUi += `</ul>`
 
         let deleteThreadsUi = ''
         for (let thread of showThreads(BBS_PATH)) {
@@ -327,6 +379,22 @@ function rAdmin(req, res) {
                 <button>Delete selected threads</button>
             </form>
         `
+
+        toolsUi += `
+            <h2>Banned IPs (${bansGetIpBanCount()})</h2>
+            <form action="/bbs/admin/banip" method="post">
+                <b>Make IP Ban</b>
+                <input type="text" name="ip" value="">
+                <input type="checkbox" name="unban" id="unban">
+                <label for="unban">Unban</label>
+                <button>Submit</button>
+            </form>
+            <ul>
+        `
+        for (let ban of bansGetIpBans()) {
+            toolsUi += `<li>${ban}</li>`
+        }
+        toolsUi += `</ul>`
 
         ui = ui.replace('%adminTools%', toolsUi)
     } else {
@@ -384,6 +452,9 @@ function rAdminDeleteThreads(req, res) {
 
 module.exports.readBbs = rRead
 module.exports.submitBbs = rSubmit
+module.exports.bbsGetCaptchaJs = rGetCaptchaJs
+module.exports.bbsGetCaptcha = rGetCaptcha
+module.exports.bbsCheckCaptcha = rCheckCaptcha
 module.exports.adminBbs = rAdmin
 module.exports.adminBbsLogin = rAdminLogin
 module.exports.adminBbsBan = rAdminBan

@@ -1,8 +1,10 @@
 <form method="post" action="/bbs/submit" class="bbs-post-form">
     <input type="hidden" name="tid" value="%tid%">
-    <div>
+    <div class="bbs-post-form-name">
         <b>Name</b>
         <input type="text" name="name" placeholder="Anonymous"><br>
+    </div>
+    <div>
         %postAsAdmin%
     </div>
     <label for="comment"><b>Comment</b></label>

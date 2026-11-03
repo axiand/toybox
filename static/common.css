@@ -119,6 +119,13 @@ body.bbs {
 
 .bbs-title {
     text-align: center;
+    font-size: 246%;
+    margin-top: 0;
+    margin-bottom: 0.25em;
+}
+
+.bbs-subtitle {
+    margin-top: 0;
 }
 
 .bbs-thread-title {
@@ -173,6 +180,14 @@ body.bbs {
     display: inline-grid;
     grid-row-gap: 0.3em;
     width: 26em;
+}
+
+.bbs-post-form-name {
+    display: ruby;
+
+    .bbs-captcha-button {
+        margin-left: 4px;
+    }
 }
 
 .bbs-ts {
