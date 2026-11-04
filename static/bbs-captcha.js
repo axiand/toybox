@@ -73,6 +73,14 @@ function injectCaptchaButtons() {
         btn.addEventListener('click', (e) => doCaptcha(e, btn))
 
         nameField.appendChild(btn)
+
+        let submitBtn = form.querySelector('.bbs-submit-btn')
+        submitBtn.addEventListener('click', (e) => {
+            if (!isSolved) {
+                e.preventDefault()
+                alert('Please solve the captcha first.')
+            }
+        })
     }
 }
 
