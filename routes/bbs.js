@@ -314,6 +314,8 @@ function rGetCaptchaJs(req, res) {
 }
 
 function rGetCaptcha(req, res) {
+    if (!checkRateLimit(`${req.ip}:captcha.get`, 2500)) return res.sendStatus(429)
+
     let ts = Date.now()
     let hash = ipToHash(ts)
 

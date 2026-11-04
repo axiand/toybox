@@ -8,16 +8,17 @@ async function doCaptcha(e, btn) {
     try {
         btn.disabled = true
         res = await fetch('/bbs/captcha/get')
-        resJ = await res.json()
-        btn.disabled = false
+        if (res.status == 200) {
+            resJ = await res.json()
+        }
     } catch (e) {
         console.log(e)
         alert(`${e}. Check the browser console for more details`)
-        btn.disabled = false
         return
     }
 
     console.log(resJ)
+    if (res.status == 429) return alert(`You're attempting the captcha too fast, try again in a moment`)
     if (res.status != 200) return alert(`Failed to get captcha: ${res.status}`)
 
     let solution = prompt(`Captcha: ${resJ.a} + ${resJ.b} = ?`)
@@ -70,7 +71,10 @@ function injectCaptchaButtons() {
         let btn = document.createElement('button')
         btn.innerHTML = 'Get Captcha'
         btn.classList.add('bbs-captcha-button')
-        btn.addEventListener('click', (e) => doCaptcha(e, btn))
+        btn.addEventListener('click', (e) => {
+            doCaptcha(e, btn)
+            markButtonsDisabled(false)
+        })
 
         nameField.appendChild(btn)
 
