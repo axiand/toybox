@@ -265,13 +265,17 @@ function rRead(req, res) {
 
 function rSubmit(req, res) {
     let { subject, name, comment, tid, postAsAdmin } = req.body
-    if (checkBannedSentence(subject ?? '') || checkBannedSentence(name ?? '') || checkBannedSentence(comment ?? '')) {
+
+    if (bansCheckIpBan(req.ip)) return rejectRequest(res, 'You are currently banned from posting.')
+
+    let isAdminPost = (postAsAdmin ?? 'off') == 'on'
+    if (!isAdmin(req) && isAdminPost) return rejectRequest(res, 'Cannot post as admin.')
+
+    if ((checkBannedSentence(subject ?? '') || checkBannedSentence(name ?? '') || checkBannedSentence(comment ?? '')) && !isAdminPost) {
         return rejectRequest(res, 'The server rejected your post because it seems to be spam or malicious.')
     }
-    if (bansCheckIpBan(req.ip)) return rejectRequest(res, 'You are currently banned from posting.')
-    if (!checkRateLimit(req.ip, POST_RATE_LIMIT)) return rejectRequest(res, `You're posting too fast! Please wait 30 seconds.`)
-    if (!isAdmin(req) && (postAsAdmin ?? 'off') == 'on') return rejectRequest(res, 'Cannot post as admin.')
-    if (!checkCaptcha(req.cookies.toybox_captcha ?? '')[0]) return rejectRequest(res, `Invalid captcha (if you're having trouble, try clearing cookies)`)
+    if (!checkRateLimit(req.ip, POST_RATE_LIMIT) && !isAdminPost) return rejectRequest(res, `You're posting too fast! Please wait 30 seconds.`)
+    if (!checkCaptcha(req.cookies.toybox_captcha ?? '')[0] && !isAdminPost) return rejectRequest(res, `Invalid captcha (if you're having trouble, try clearing cookies)`)
 
     let postData = {
         subject: subject,
