@@ -30,8 +30,12 @@ const CAPTCHA_MAX_AGE = 30 * 60 * 1000
 const ADMIN_HASH = ipToHash(process.env['TOYBOX_ADMIN_PASS'])
 var RATE_LIMITS = new Map()
 
-function isSafeString(str, maxLength) {
-    return str.match(SAFE_STRING_RGX) && str.length <= maxLength && str.trim().length > 0
+function isSafeString(str, maxLength, allowNewline = false) {
+    if (str.length > maxLength) return false
+    if (str.trim().length <= 0) return false
+    if (!allowNewline && str.includes('\n')) return false
+
+    return true
 }
 
 function escape(str) {
@@ -66,7 +70,10 @@ function createThread(postData, req) {
     let { subject, name, comment } = postData
     if (!subject || !isSafeString(subject, MAX_SUBJECT_LENGTH)) return rejectRequest(req, 'Subject is malformed, empty, or uses invalid characters')
     if (!name || !isSafeString(name, MAX_NAME_LENGTH)) return rejectRequest(req, 'Name is malformed, empty, or uses invalid characters')
-    if (!comment || !isSafeString(comment, MAX_COMMENT_LENGTH)) return rejectRequest(req, 'Comment is malformed, empty, or uses invalid characters')
+    if (
+        !comment
+        || (!isSafeString(comment, MAX_COMMENT_LENGTH, true) && postData.admin != 'on')
+    ) return rejectRequest(req, 'Comment is malformed, empty, or uses invalid characters')
 
     let threads = showThreads(BBS_PATH)
     if ((threads[0]?.ownerIp ?? '0') == req.req.ip && postData.admin != 'on') return rejectRequest(req, 'Please do not flood the thread index.')
@@ -90,7 +97,10 @@ function createThread(postData, req) {
 function createPost(id, postData, req) {
     let { name, comment } = postData
     if (!name || !isSafeString(name, MAX_NAME_LENGTH)) return rejectRequest(req, 'Name is malformed, empty, or uses invalid characters')
-    if (!comment || !isSafeString(comment, MAX_COMMENT_LENGTH)) return rejectRequest(req, 'Comment is malformed, empty, or uses invalid characters')
+    if (
+        !comment
+        || (!isSafeString(comment, MAX_COMMENT_LENGTH, true) && postData.admin != 'on')
+    ) return rejectRequest(req, 'Comment is malformed, empty, or uses invalid characters')
 
     let thread = getThread(join(BBS_PATH, `/${id}.txt`))
     if (thread == "path traversal") return thread
@@ -350,7 +360,6 @@ function checkCaptcha(capStr) {
 }
 
 function checkAdminHash(str) {
-    console.log(str, ADMIN_HASH)
     return str == ADMIN_HASH
 }
 
