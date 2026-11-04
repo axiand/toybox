@@ -66,7 +66,18 @@ async function checkCaptcha(str = null) {
 
 function injectCaptchaButtons() {
     for (let form of document.querySelectorAll('.bbs-post-form')) {
-        let nameField = form.querySelector('.bbs-post-form-name')
+        /* 
+            the class bbs-post-form-nam is a misnomer, it can also refer to the subject field,
+            but i'm too lazy to change it right now
+        */
+        let field = form.querySelector('.bbs-post-form-name')
+
+        let nameField = form.querySelector('input[name="name"]')
+
+        nameField.addEventListener('change', () => {
+            localStorage.setItem('toybox_bbs_name', nameField.value)
+        })
+        nameField.value = localStorage.getItem('toybox_bbs_name')
 
         let btn = document.createElement('button')
         btn.innerHTML = 'Get Captcha'
@@ -76,7 +87,7 @@ function injectCaptchaButtons() {
             markButtonsDisabled(false)
         })
 
-        nameField.appendChild(btn)
+        field.appendChild(btn)
 
         let submitBtn = form.querySelector('.bbs-submit-btn')
         submitBtn.addEventListener('click', (e) => {
