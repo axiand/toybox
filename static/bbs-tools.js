@@ -92,7 +92,7 @@ function injectForms() {
 
         let submitBtn = form.querySelector('.bbs-submit-btn')
         submitBtn.addEventListener('click', (e) => {
-            if (!isSolved) {
+            if (!isSolved && !form.querySelector('input[name="postAsAdmin"]')?.checked) {
                 e.preventDefault()
                 alert('Please solve the captcha first.')
             }
