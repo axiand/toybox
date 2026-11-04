@@ -16,7 +16,7 @@ const POST_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-post.html'))
 const REPLY_FORM_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-form.html'))
 const INFO_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-info.html'))
 const ADMIN_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-admin.html'))
-const CAPTCHA_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-captcha.js'))
+const JS_TEMPLATE = readFileSync(join(__dirname, '../static/bbs-tools.js'))
 
 const SAFE_STRING_RGX = /^.+$/
 const MAX_SUBJECT_LENGTH = 120
@@ -308,9 +308,9 @@ function rSubmit(req, res) {
     }
 }
 
-function rGetCaptchaJs(req, res) {
+function rGetJs(req, res) {
     res.type('application/javascript')
-    res.send(CAPTCHA_TEMPLATE)
+    res.send(JS_TEMPLATE)
 }
 
 function rGetCaptcha(req, res) {
@@ -469,7 +469,7 @@ function rAdminDeleteThreads(req, res) {
 
 module.exports.readBbs = rRead
 module.exports.submitBbs = rSubmit
-module.exports.bbsGetCaptchaJs = rGetCaptchaJs
+module.exports.bbsGetJs = rGetJs
 module.exports.bbsGetCaptcha = rGetCaptcha
 module.exports.bbsCheckCaptcha = rCheckCaptcha
 module.exports.adminBbs = rAdmin

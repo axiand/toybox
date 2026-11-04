@@ -1,4 +1,5 @@
 var isSolved = false
+var collapsedArticles = new Set()
 
 async function doCaptcha(e, btn) {
     e.preventDefault()
@@ -64,10 +65,10 @@ async function checkCaptcha(str = null) {
     if (success) markCaptchaSolved()
 }
 
-function injectCaptchaButtons() {
+function injectForms() {
     for (let form of document.querySelectorAll('.bbs-post-form')) {
         /* 
-            the class bbs-post-form-nam is a misnomer, it can also refer to the subject field,
+            the class bbs-post-form-name is a misnomer, it can also refer to the subject field,
             but i'm too lazy to change it right now
         */
         let field = form.querySelector('.bbs-post-form-name')
@@ -113,8 +114,30 @@ function markCaptchaSolved() {
     markButtonsDisabled(true)
 }
 
+function injectThreads() {
+    let threads = document.querySelectorAll('.bbs-articles details')
+
+    for (let thr of threads) {
+        if (collapsedArticles.has(thr.getAttribute('data-id'))) thr.open = false
+
+        thr.addEventListener('toggle', () => {
+            if (thr.open) { collapsedArticles.delete(thr.getAttribute('data-id')) }
+            else { collapsedArticles.add(thr.getAttribute('data-id')) }
+
+            localStorage.setItem('toybox_bbs_collapsed', [...collapsedArticles])
+        })
+    }
+}
+
 async function init() {
-    injectCaptchaButtons()
+    let collapsedSaved = localStorage.getItem('toybox_bbs_collapsed')
+    if (collapsedSaved == null) collapsedSaved = ''
+    collapsedSaved = collapsedSaved.split(',')
+
+    collapsedArticles = new Set(collapsedSaved)
+
+    injectForms()
+    injectThreads()
     if (await cookieStore.get('toybox_captcha') != null) checkCaptcha()
 }
 
