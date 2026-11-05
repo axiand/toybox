@@ -4,6 +4,10 @@
     <title>%title%</title>
     <link rel="stylesheet" href="/common.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta property="og:title" content="%title%" />
+    <meta property="og:site_name" content="Asciiboard" />
+    <meta property="og:description" content="Browse %threadCount% on Asciiboard." />
 </head>
 
 <body class="bbs">
@@ -37,7 +41,7 @@
     <div class="bbs-articles">
         %articles%
     </div>
-    <p class="bbs-centered">%threadCount%</p>
+    <p class="bbs-centered">%threadCount% - %userId%</p>
     <div id="about">%bbsInfo%</div>
     <hr>
     <p class="bbs-centered smalltext">
