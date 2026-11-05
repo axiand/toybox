@@ -128,6 +128,18 @@ function injectThreads() {
             localStorage.setItem('toybox_bbs_collapsed', [...collapsedArticles])
         })
     }
+
+    let timestamps = document.querySelectorAll('.bbs-ts')
+
+    for (let ts of timestamps) {
+        let stamp = parseInt(ts.getAttribute('data-ts'))
+        if (isNaN(stamp)) {
+            console.warn('invalid stamp on', ts)
+            continue
+        }
+
+        ts.innerText = new Date(stamp).toLocaleString('en-gb')
+    }
 }
 
 async function init() {
