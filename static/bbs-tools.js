@@ -1,5 +1,6 @@
 var isSolved = false
 var collapsedArticles = new Set()
+var isInThread = new URLSearchParams(document.location.search).has('read')
 
 async function doCaptcha(e, btn) {
     e.preventDefault()
@@ -118,7 +119,7 @@ function injectThreads() {
     let threads = document.querySelectorAll('.bbs-articles details')
 
     for (let thr of threads) {
-        if (collapsedArticles.has(thr.getAttribute('data-id'))) thr.open = false
+        if (!isInThread && collapsedArticles.has(thr.getAttribute('data-id'))) thr.open = false
 
         thr.addEventListener('toggle', () => {
             if (thr.open) { collapsedArticles.delete(thr.getAttribute('data-id')) }
